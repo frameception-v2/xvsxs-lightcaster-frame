@@ -20,7 +20,9 @@ import { base, optimism } from "wagmi/chains";
 import { useSession } from "next-auth/react";
 import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
-import { PROJECT_TITLE } from "~/lib/constants";
+import { Button } from "~/components/ui/button";
+import { Slider } from "~/components/ui/slider";
+import { PROJECT_TITLE, LIGHT_DIRECTIONS, MAX_INTENSITY, MIN_INTENSITY } from "~/lib/constants";
 
 function LightDirectionCard() {
   const [direction, setDirection] = useState<typeof LIGHT_DIRECTIONS[number]>('ascending');
