@@ -22,17 +22,80 @@ import { createStore } from "mipd";
 import { Label } from "~/components/ui/label";
 import { PROJECT_TITLE } from "~/lib/constants";
 
-function ExampleCard() {
+function LightDirectionCard() {
+  const [direction, setDirection] = useState<typeof LIGHT_DIRECTIONS[number]>('ascending');
+  const [intensity, setIntensity] = useState(50);
+  const [isCasting, setIsCasting] = useState(false);
+  const [castResult, setCastResult] = useState('');
+
+  const handleCast = useCallback(async () => {
+    try {
+      setIsCasting(true);
+      setCastResult('');
+      
+      const result = await sdk.actions.startCast({
+        text: `Light direction: ${direction} at ${intensity}% intensity`,
+        embeds: [{
+          url: `${process.env.NEXT_PUBLIC_URL}/api/light-data`,
+          data: {
+            direction,
+            intensity,
+            timestamp: new Date().toISOString()
+          }
+        }]
+      });
+
+      setCastResult(result.success ? 'Cast successful!' : 'Cast failed');
+    } catch (error) {
+      setCastResult(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsCasting(false);
+    }
+  }, [direction, intensity]);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Welcome to the Frame Template</CardTitle>
+        <CardTitle>Light Direction Caster</CardTitle>
         <CardDescription>
-          This is an example card that you can customize or remove
+          Share light direction experiences with the community
         </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Label>Place content in a Card here.</Label>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          {LIGHT_DIRECTIONS.map((dir) => (
+            <Button
+              key={dir}
+              variant={direction === dir ? 'default' : 'outline'}
+              onClick={() => setDirection(dir)}
+            >
+              {dir.charAt(0).toUpperCase() + dir.slice(1)}
+            </Button>
+          ))}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Intensity: {intensity}%</Label>
+          <Slider
+            min={MIN_INTENSITY}
+            max={MAX_INTENSITY}
+            value={[intensity]}
+            onValueChange={([value]) => setIntensity(value)}
+          />
+        </div>
+
+        <Button 
+          onClick={handleCast}
+          disabled={isCasting}
+        >
+          {isCasting ? 'Casting...' : 'Cast Light Experience'}
+        </Button>
+
+        {castResult && (
+          <div className="text-sm text-muted-foreground">
+            {castResult}
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -140,7 +203,7 @@ export default function Frame() {
         <h1 className="text-2xl font-bold text-center mb-4 text-gray-700 dark:text-gray-300">
           {PROJECT_TITLE}
         </h1>
-        <ExampleCard />
+        <LightDirectionCard />
       </div>
     </div>
   );
